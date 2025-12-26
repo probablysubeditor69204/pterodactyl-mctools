@@ -1,110 +1,123 @@
-# Installation
+# McTools - Pterodactyl Addon
 
-Before using Mctools, ensure that your Pterodactyl Panel Version is v1.11x.
+A powerful Pterodactyl Panel addon that allows server owners to easily browse, search, and install Minecraft mods, plugins, resource packs, data packs, shaders, and modpacks directly from **Modrinth** and **CurseForge** within their server management interface.
 
-1. Open the `pterodactyl` folder in the Mctools addon directory, where you'll find three directories: `app`, `database` and `resources`. Please upload these directories to your Pterodactyl directory (commonly located at `/var/www/pterodactyl`).
+![McTools Banner](https://via.placeholder.com/800x200/1a1f2e/00d4ff?text=McTools+for+Pterodactyl)
 
-2. Open the file `resources/scripts/routers/routes.ts`
+## ✨ Features
 
-- Find the code:
+### 🎮 Multi-Category Support
+- **Mods** - Browse and install Minecraft mods
+- **Plugins** - Server-side plugins (Bukkit, Spigot, Paper, etc.)
+- **Resource Packs** - Texture and resource packs
+- **Data Packs** - Minecraft data packs
+- **Shaders** - Shader packs for enhanced graphics
+- **Modpacks** - Complete modpack installations
 
-```js
-import ServerActivityLogContainer from "@/components/server/ServerActivityLogContainer";
-```
+### 🔍 Advanced Search & Filtering
+- **Dual Provider Support** - Switch between Modrinth and CurseForge
+- **Smart Search** - Real-time search across both platforms
+- **Sorting Options**:
+  - Downloads (Most Popular)
+  - Relevance (Best Match)
+  - Last Updated (Newest Updates)
+- **Top Pagination** - Easy navigation through search results
 
-- Add this code below it:
+### 🎨 Native Pterodactyl UI
+- Seamlessly integrated with Pterodactyl's design language
+- Uses native color tokens and styling
+- Responsive layout that matches the panel's aesthetic
+- Consistent with Pterodactyl's GreyRowBox components
 
-```js
-import MctoolsContainer from "@/components/server/mctools/MctoolsContainer";
-```
+### ⚙️ Admin Controls
+- Configure Modrinth and CurseForge API keys
+- Manage addon settings from the admin panel
+- Easy setup and configuration
 
-- Find this code:
+### 🚀 One-Click Installation
+- Install mods, plugins, and packs with a single click
+- Automatic file placement in correct directories
+- Version-aware installations
 
-```js
-        {
-            path: '/settings',
-            permission: ['settings.*', 'file.sftp'],
-            name: 'Settings',
-            component: SettingsContainer,
-        },
-```
+## 📸 Screenshots
 
-- Add this code below it:
+*Coming soon - Screenshots of the addon in action*
 
-```js
+## 📋 Requirements
 
-        {
-            path: '/mctools',
-            permission: 'file.*',
-            name: 'Mctools',
-            component: MctoolsContainer,
-        },
-```
+- Pterodactyl Panel v1.x
+- PHP 8.0 or higher
+- Composer
+- Node.js & npm/yarn (for frontend compilation)
 
-3. Open the file `routes/api-client.php`
+## 🔧 Installation
 
-- Find this code:
+See [INSTALL.md](INSTALL.md) for detailed installation instructions.
 
-```php
-    Route::post('/command', [Client\Servers\CommandController::class, 'index']);
-    Route::post('/power', [Client\Servers\PowerController::class, 'index']);
-```
+## 🎯 Usage
 
-- Add this code below:
+1. Navigate to your Minecraft server in the Pterodactyl panel
+2. Click on the **"Mctools"** tab in the server navigation
+3. Select a category (Mods, Plugins, Resource Packs, etc.)
+4. Search for content or browse the listings
+5. Click **"Install"** on any item to add it to your server
+6. Restart your server to apply changes
 
-```php
+## 🔑 API Configuration
 
-    Route::group(['prefix' => '/mctools'], function () {
-        Route::get('/', [\Pterodactyl\Http\Controllers\Api\Client\Servers\MctoolsController::class, 'index']);
-        Route::post('/install', [\Pterodactyl\Http\Controllers\Api\Client\Servers\MctoolsController::class, 'install']);
-    });
-```
+### Modrinth
+No API key required - works out of the box!
 
-4. Open the file `routes/admin.php`
+### CurseForge
+1. Get your API key from [CurseForge for Studios](https://console.curseforge.com/)
+2. Navigate to **Admin Panel → Mctools Settings**
+3. Enter your CurseForge API key
+4. Save settings
 
-- Put this code in the last line:
+## 🛠️ Features in Detail
 
-```php
+### Provider Switching
+Toggle between Modrinth and CurseForge to access different content libraries. Each provider has its own unique collection of mods and plugins.
 
-Route::group(['prefix' => 'mctools'], function () {
-    Route::get('/', [\Pterodactyl\Http\Controllers\Admin\MctoolsSettingsController::class, 'index'])->name('admin.mctools');
-    Route::post('/', [\Pterodactyl\Http\Controllers\Admin\MctoolsSettingsController::class, 'update'])->name('admin.mctools.update');
-});
-```
+### Plugin Support
+The addon intelligently filters server-side plugins when you select the "Plugins" category, showing only compatible plugins for:
+- Bukkit
+- Spigot
+- Paper
+- Purpur
+- And other server platforms
 
-5. Open the file `resources/views/layouts/admin.blade.php`
+### Smart Installation
+Files are automatically placed in the correct directories:
+- Mods → `/mods`
+- Plugins → `/plugins`
+- Resource Packs → `/resourcepacks`
+- Shaders → `/shaderpacks`
 
-- Find this code:
+## 🤝 Contributing
 
-```php
-                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.nests') ?: 'active' }}">
-                            <a href="{{ route('admin.nests') }}">
-                                <i class="fa fa-th-large"></i> <span>Nests</span>
-                            </a>
-                        </li>
-```
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-- Add this code below:
+## 📝 License
 
-```php
-                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.mctools') ?: 'active' }}">
-                            <a href="{{ route('admin.mctools') }}">
-                                <i class="fa fa-gears"></i> <span>Mctools Settings</span>
-                            </a>
-                        </li>
-```
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-6. Run these commands in your pterodactyl directory:
+## 🙏 Credits
 
-   1. `php artisan route:clear`
-   2. `php artisan cache:clear`
-   3. `php artisan migrate --force`
-   4. `chmod -R 777 /var/www/pterodactyl`
+- Built for [Pterodactyl Panel](https://pterodactyl.io/)
+- Powered by [Modrinth API](https://docs.modrinth.com/)
+- Powered by [CurseForge API](https://docs.curseforge.com/)
 
-7. Build the Panel:
+## 📞 Support
 
-```bash
-npm run build
-```
+If you encounter any issues or have questions:
+- Open an issue on [GitHub](https://github.com/probablysubeditor69204/McTools/issues)
+- Check the [INSTALL.md](INSTALL.md) for troubleshooting tips
 
-8. **Set up CurseForge API**: To use CurseForge content, you need an API key. Obtain one from the [CurseForge Console](https://console.curseforge.com), then enter it in the Admin settings under **Mctools Settings**.
+## 🎉 Acknowledgments
+
+Special thanks to the Pterodactyl community and all contributors who helped make this addon possible!
+
+---
+
+**Made with ❤️ for the Minecraft server community**
