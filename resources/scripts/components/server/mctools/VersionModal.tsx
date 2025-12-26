@@ -52,7 +52,11 @@ const VersionModal = ({ item, onClose, onInstall }: Props) => {
 
                     {/* Version List */}
                     <div css={tw`p-4 overflow-y-auto max-h-96`}>
-                        {item.versions && item.versions.length > 0 ? (
+                        {item.loadingVersions ? (
+                            <div css={tw`text-center py-8 text-neutral-400`}>
+                                <p className="animate-pulse">Loading versions...</p>
+                            </div>
+                        ) : item.versions && item.versions.length > 0 ? (
                             <div css={tw`space-y-2`}>
                                 {item.versions.map((version: any) => (
                                     <div

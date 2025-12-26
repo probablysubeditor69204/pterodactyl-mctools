@@ -1,16 +1,48 @@
 import tw from 'twin.macro';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload, faCloudDownloadAlt, faHeart } from '@fortawesome/free-solid-svg-icons';
 import VersionModal from './VersionModal';
+import axios from 'axios';
 
 interface Props {
     item: any;
+    uuid: string;
     onInstall: (versionId: string) => void;
 }
 
-const MctoolsCard = ({ item, onInstall }: Props) => {
+const MctoolsCard = ({ item, uuid, onInstall }: Props) => {
     const [showModal, setShowModal] = useState(false);
+    const [versions, setVersions] = useState<any[]>([]);
+    const [loadingVersions, setLoadingVersions] = useState(false);
+
+    const handleInstallClick = () => {
+        setShowModal(true);
+        setLoadingVersions(true);
+
+        // Fetch versions from API
+        axios.get(`/api/client/servers/${uuid}/mctools/versions`, {
+            params: {
+                id: item.id,
+                provider: item.provider
+            }
+        })
+            .then(({ data }) => {
+                setVersions(data.versions || []);
+                setLoadingVersions(false);
+            })
+            .catch(error => {
+                console.error('Failed to fetch versions:', error);
+                setVersions([]);
+                setLoadingVersions(false);
+            });
+    };
+
+    const itemWithVersions = {
+        ...item,
+        versions: versions,
+        loadingVersions: loadingVersions
+    };
 
     return (
         <>
@@ -57,7 +89,7 @@ const MctoolsCard = ({ item, onInstall }: Props) => {
                 {/* Action Button */}
                 <div css={tw`ml-4`}>
                     <button
-                        onClick={() => setShowModal(true)}
+                        onClick={handleInstallClick}
                         css={tw`bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors duration-150`}
                     >
                         <FontAwesomeIcon icon={faDownload} css={tw`mr-2`} />
@@ -69,7 +101,7 @@ const MctoolsCard = ({ item, onInstall }: Props) => {
             {/* Version Modal */}
             {showModal && (
                 <VersionModal
-                    item={item}
+                    item={itemWithVersions}
                     onClose={() => setShowModal(false)}
                     onInstall={onInstall}
                 />

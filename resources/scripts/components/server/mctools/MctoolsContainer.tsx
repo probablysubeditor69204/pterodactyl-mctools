@@ -43,9 +43,9 @@ export default () => {
             });
     }, [uuid, category, search, page, provider, sort]);
 
-    const onInstall = (id: string, itemProvider: string) => {
+    const onInstall = (id: string, versionId: string, itemProvider: string) => {
         clearFlashes('mctools:install');
-        axios.post(`/api/client/servers/${uuid}/mctools/install`, { id, provider: itemProvider, category })
+        axios.post(`/api/client/servers/${uuid}/mctools/install`, { id, version_id: versionId, provider: itemProvider, category })
             .then(({ data }) => {
                 addFlash({ type: 'success', key: 'mctools:install', message: data.message });
             })
@@ -84,7 +84,12 @@ export default () => {
                         <div css={tw`text-center py-12 text-neutral-500`}>No items found matching your criteria.</div>
                     ) : (
                         items.map(item => (
-                            <MctoolsCard key={item.id} item={item} onInstall={() => onInstall(item.id, item.provider)} />
+                            <MctoolsCard
+                                key={item.id}
+                                item={item}
+                                uuid={uuid}
+                                onInstall={(versionId) => onInstall(item.id, versionId, item.provider)}
+                            />
                         ))
                     )}
                 </div>
