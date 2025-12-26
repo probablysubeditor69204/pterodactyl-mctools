@@ -56,6 +56,7 @@ import MctoolsContainer from "@/components/server/mctools/MctoolsContainer";
 
     Route::group(['prefix' => '/mctools'], function () {
         Route::get('/', [\Pterodactyl\Http\Controllers\Api\Client\Servers\MctoolsController::class, 'index']);
+        Route::get('/versions', [\Pterodactyl\Http\Controllers\Api\Client\Servers\MctoolsController::class, 'versions']);
         Route::post('/install', [\Pterodactyl\Http\Controllers\Api\Client\Servers\MctoolsController::class, 'install']);
     });
 ```

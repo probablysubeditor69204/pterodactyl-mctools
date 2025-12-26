@@ -194,6 +194,63 @@ class MctoolsController extends ClientApiController
     }
 
     /**
+     * Fetches available versions for a specific item.
+     */
+    public function versions(Request $request, Server $server)
+    {
+        if (!$request->user()->can(Permission::ACTION_FILE_READ, $server)) {
+            throw new AuthorizationException();
+        }
+
+        $id = $request->query('id');
+        $provider = $request->query('provider', 'modrinth');
+
+        try {
+            if ($provider === 'modrinth') {
+                $client = $this->httpClient['modrinth'];
+                $response = $client->get("project/{$id}/version");
+                $versions = json_decode($response->getBody()->getContents(), true);
+
+                $formatted = array_map(function ($version) {
+                    return [
+                        'id' => $version['id'],
+                        'name' => $version['name'],
+                        'version_number' => $version['version_number'],
+                        'game_versions' => $version['game_versions'] ?? [],
+                        'date_published' => $version['date_published'],
+                        'downloads' => $version['downloads'] ?? 0,
+                        'files' => $version['files'] ?? []
+                    ];
+                }, $versions);
+
+                return response()->json(['versions' => $formatted]);
+            } else if ($provider === 'curseforge') {
+                $client = $this->httpClient['curseforge'];
+                $response = $client->get("mods/{$id}/files");
+                $files = json_decode($response->getBody()->getContents(), true);
+
+                $formatted = array_map(function ($file) {
+                    return [
+                        'id' => $file['id'],
+                        'name' => $file['displayName'],
+                        'version_number' => $file['fileName'],
+                        'game_versions' => $file['gameVersions'] ?? [],
+                        'date_published' => $file['fileDate'],
+                        'downloads' => $file['downloadCount'] ?? 0,
+                        'files' => [['url' => $file['downloadUrl'], 'filename' => $file['fileName']]]
+                    ];
+                }, $files['data'] ?? []);
+
+                return response()->json(['versions' => $formatted]);
+            }
+
+            return response()->json(['error' => 'Unsupported provider.'], 400);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch versions: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Installs a specific item.
      */
     public function install(Request $request, Server $server)
@@ -203,6 +260,7 @@ class MctoolsController extends ClientApiController
         }
 
         $id = $request->input('id');
+        $versionId = $request->input('version_id');
         $provider = $request->input('provider', 'modrinth');
         $category = $request->input('category', 'Mods');
 
@@ -218,26 +276,44 @@ class MctoolsController extends ClientApiController
         try {
             if ($provider === 'modrinth') {
                 $client = $this->httpClient['modrinth'];
-                $response = $client->get("project/{$id}/version");
-                $versions = json_decode($response->getBody()->getContents(), true);
                 
-                if (empty($versions)) {
-                    return response()->json(['error' => 'No versions found for this item.'], 404);
+                if ($versionId) {
+                    // Fetch specific version
+                    $response = $client->get("version/{$versionId}");
+                    $version = json_decode($response->getBody()->getContents(), true);
+                    $file = $version['files'][0];
+                } else {
+                    // Fallback to latest version
+                    $response = $client->get("project/{$id}/version");
+                    $versions = json_decode($response->getBody()->getContents(), true);
+                    
+                    if (empty($versions)) {
+                        return response()->json(['error' => 'No versions found for this item.'], 404);
+                    }
+                    $file = $versions[0]['files'][0];
                 }
-
-                $file = $versions[0]['files'][0];
+                
                 $downloadUrl = $file['url'];
                 $fileName = $file['filename'];
             } else if ($provider === 'curseforge') {
                 $client = $this->httpClient['curseforge'];
-                $response = $client->get("mods/{$id}/files");
-                $files = json_decode($response->getBody()->getContents(), true);
+                
+                if ($versionId) {
+                    // Fetch specific file
+                    $response = $client->get("mods/{$id}/files/{$versionId}");
+                    $fileData = json_decode($response->getBody()->getContents(), true);
+                    $file = $fileData['data'];
+                } else {
+                    // Fallback to latest file
+                    $response = $client->get("mods/{$id}/files");
+                    $files = json_decode($response->getBody()->getContents(), true);
 
-                if (empty($files['data'])) {
-                    return response()->json(['error' => 'No files found for this item.'], 404);
+                    if (empty($files['data'])) {
+                        return response()->json(['error' => 'No files found for this item.'], 404);
+                    }
+                    $file = $files['data'][0];
                 }
 
-                $file = $files['data'][0];
                 $downloadUrl = $file['downloadUrl'];
                 $fileName = $file['fileName'];
             } else {
