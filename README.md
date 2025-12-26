@@ -28,11 +28,23 @@ See [INSTALL.md](INSTALL.md) for installation instructions.
 **Modrinth** - No API key needed ✅  
 **CurseForge** - Get your key from [CurseForge for Studios](https://console.curseforge.com/) and add it in Admin Panel → Mctools Settings
 
-## � Support
+## 📞 Support
 
 - [Report Issues](https://github.com/probablysubeditor69204/McTools/issues)
 - [Installation Guide](INSTALL.md)
+- [Discord Server](https://discord.gg/K2KX6ARjFC)
+
+## 💖 Support the Project
+
+If this addon saves you time and you'd like to support continued development:
+
+**Crypto Donations:**
+- **Litecoin (LTC):** `ltc1qwa6htu2frr30flznz2lv9wcmph7xmfztljsxpk`
+- **Ethereum (ETH):** `0x33DAF3D01cE590d2F32C6b66ee8B5F3c757AC7bA`
+- **USDT (ERC20):** `0x33DAF3D01cE590d2F32C6b66ee8B5F3c757AC7bA`
+
+Every donation, no matter how small, is greatly appreciated! ☕
 
 ---
 
-**Made with ❤️ for the Minecraft community**
+**Made with ❤️ by [probablysubeditor69204](https://github.com/probablysubeditor69204)**
